@@ -3,20 +3,18 @@ import torch
 from torch.autograd import Variable
 import csv
 import numpy
-
+#训练系数初始值，只需要初始化一次
 para=[]
-
+#神经网络MSE拟合程度度量值
+ACCURACY = 0.05
 # PROJECT_LIST=[]
 
-PROJECT_INDEX = multiprocessing.Value("i",0)
-PROJECT_NUM=174*150
+#PROJECT_INDEX = multiprocessing.Value("i",0)
 
+#PROJECT_NUM=174*150
+#用于存放训练project的序号
 LIST_NUM=[]
-#
-# NET_NAME_LIST=[]
 
-#
-#
 # def project_generator():
 #     for x in range(174):
 #         for y in range(150):
@@ -32,6 +30,7 @@ LIST_NUM=[]
 # name_list = net_name_generator()
 
 
+#系数和训练参数初始化
 def para_init():
     para_init_0= open("./data/output/out_0_0.csv", "r")
     reader = csv.reader(para_init_0)
@@ -44,9 +43,8 @@ def para_init():
             # PROJECT_LIST.append("./data/output/out_" + str(x) + "_" + str(y) + ".csv")
             # NET_NAME_LIST.append("./data/net_saved_multi_processing/net_" + str(x) + "_" + str(y) + ".pkl")
     # print(LIST_NUM)
-    # exit(0)
 
-
+#训练代码，采用CUDA加速
 def train(net_name,filein):
     response=[]
     reader = csv.reader(filein)
@@ -68,7 +66,6 @@ def train(net_name,filein):
     optimizer = torch.optim.Adagrad(net.parameters(), lr=0.5)
     loss_func = torch.nn.MSELoss()  # this is for regression mean squared loss
 
-
     for t in range(1000000):
         prediction = net(x)     # input x and predict based on x
         loss = loss_func(prediction, y)     # must be (1. nn output, 2. target)
@@ -76,7 +73,7 @@ def train(net_name,filein):
         loss.backward()         # backpropagation, compute gradients
         optimizer.step()    # apply gradients
         loss_value=loss.cpu().data.numpy()[0]
-        if(loss_value<0.05):
+        if(loss_value<ACCURACY):
             break
         #print(loss_value)
         #print(prediction.cpu().data.numpy())
@@ -86,47 +83,30 @@ def train(net_name,filein):
         print("Can't save the net"+net_name)
         exit(1)
 
-    print("Saved "+net_name+"successfully!")
+    print("Saved "+net_name+" successfully!")
 
 
-def run_one_time_project(lock,name):
-    # global name_list
-    while(1):
-        #print("This is process "+name)
-        lock.acquire()
-        global PROJECT_INDEX
-        PROJECT_INDEX.value += 1
-        lock.release()
-        try:
-            f = open("./data/output/out_" + str(LIST_NUM[PROJECT_INDEX.value-1][0]) + "_" + str(LIST_NUM[PROJECT_INDEX.value-1][1]) + ".csv", "r")
-            name= "./data/net_saved_multi_processing/net_" + str(LIST_NUM[PROJECT_INDEX.value-1][0]) + "_" + str(LIST_NUM[PROJECT_INDEX.value-1][1]) + ".pkl"
-            train(name, f)
-        except:
-            print("Can't open file or reach the bottom!")
-            break
-        finally:
-            f.close()
+def run_one_time_project(x_y):
+    try:
+        f = open("./data/output/out_" + str(x_y[0]) + "_" + str(x_y[1]) + ".csv", "r")
+        name= "./data/net_saved_multi_processing/net_" + str(x_y[0]) + "_" + str(x_y[1]) + ".pkl"
+        train(name, f)
+        f.close()
+    except:
+        print("Can't open file or reach the bottom!")
 
 
-
-
+#主进程
 if(__name__=="__main__"):
-    LOCK = multiprocessing.Lock()
+    #LOCK = multiprocessing.Lock()
     para_init()
-    # 初始化一个线程对象，传入函数counter，及其参数1000
-    th1 = multiprocessing.Process(target=run_one_time_project,args=(LOCK,"PRO1",))
-    th2 = multiprocessing.Process(target=run_one_time_project,args=(LOCK,"PRO2",))
-    th3 = multiprocessing.Process(target=run_one_time_project,args=(LOCK,"PRO3",))
-    th4 = multiprocessing.Process(target=run_one_time_project,args=(LOCK,"PRO4",))
-    # 启动线程
-    th1.start()
-    th2.start()
-    th3.start()
-    th4.start()
-    # 主线程阻塞等待子线程结束
-    th1.join()
-    th2.join()
-    th3.join()
-    th4.join()
+    #开启进程数量为4的进程池
+    pool = multiprocessing.Pool(4)
+    #进程池中的进程依次调用可迭代对象进行计算
+    pool.map(run_one_time_project,LIST_NUM)
+    #进程池不在添加新的进程
+    pool.close()
+    #主线程阻塞等待子线程结束
+    pool.join()
 
     print("Finish all jobs and quit the program!")
