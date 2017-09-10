@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import csv
 import numpy as np
 
-f = open("./data/output/out_150_74.csv","r")
+f = open("./data/output/out_150_70.csv","r")
 reader = csv.reader(f)
 para=[]
 response=[]
@@ -29,7 +29,7 @@ net = torch.nn.Sequential(
 optimizer = torch.optim.Adagrad(net.parameters(), lr=0.4)
 loss_func = torch.nn.MSELoss().cuda()  # this is for regression mean squared loss
 
-for t in range(200000):
+for t in range(100000):
     prediction = net(x).cuda()     # input x and predict based on x
 
     loss = loss_func(prediction, y).cuda()     # must be (1. nn output, 2. target)
