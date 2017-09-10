@@ -6,6 +6,7 @@ import csv
 import numpy as np
 
 
+
 net = torch.load("./data/net_saved/net_82_94.pkl")
 
 print(net)
