@@ -11,7 +11,7 @@ def deal_one_situation(para_in):
     result = []
     for x in range(174):
         for y in range(150):
-            name = "./data/net_saved_multi_processing/net_" + str(x) + "_" + str(y) + ".pkl"
+            name = "/media/lordshi/Life/rsm_result_all/net_" + str(x) + "_" + str(y) + ".pkl"
             net=torch.load(name)
             predict=net(para_in)
             result.append(predict.data.numpy()[0])

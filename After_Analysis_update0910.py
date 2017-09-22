@@ -13,7 +13,7 @@ import numpy
 def init_():
     for x in range(174):
         for y in range(150):
-            name = "./data/net_saved_multi_processing/net_" + str(x) + "_" + str(y) + ".pkl"
+            name = "/media/lordshi/Life/RSM_0921_ALL/net_" + str(x) + "_" + str(y) + ".pkl"
             net = torch.load(name)
             NET_LIST.append(net)
 
@@ -55,18 +55,37 @@ def calculate_MB_and_ME():
     for i in range(30):
         predict = PREDICT_ALL[i]
         RSM_out = get_one_situation_rsm(i)
-        bias_sum=0
-        error_sum=0
+        bias_sum = 0
+        error_sum = 0
+        predict_sum = 0
+        FB_sum = 0
+        FE_sum = 0
+
         for index in range(len(predict)):
-            bias_sum+=(predict[index]-RSM_out[index])
-            error_sum+=abs(predict[index]-RSM_out[index])
+            bias_sum += (predict[index]-RSM_out[index])
+            error_sum += abs(predict[index]-RSM_out[index])
+            predict_sum += predict[index]
+            FB_sum += (predict[index]-RSM_out[index])/(predict[index]+RSM_out[index])*2
+            FE_sum += abs(predict[index] - RSM_out[index]) / (predict[index] + RSM_out[index]) * 2
+
         # mean_bias = sum([j - k for j in predict for k in RSM_out]) / 174 * 150
         # mean_error = sum([abs(j - k) for j in predict for k in RSM_out]) / 174 * 150
         mean_bias=bias_sum/(174*150)
         mean_error=error_sum/(174*150)
+        mean_FB = FB_sum/(174*150)
+        mean_FE = FE_sum/(174*150)
+
         #print(mean_bias)
         MB_RESULT.append(mean_bias)
         ME_RESULT.append(mean_error)
+        NMB_RESULT.append(bias_sum/predict_sum)
+        NME_RESULT.append(error_sum/predict_sum)
+
+        MFB_RESULT.append(mean_FB)
+        MFE_RESULT.append(mean_FE)
+
+
+
 
 
 if (__name__ == "__main__"):
@@ -89,6 +108,14 @@ if (__name__ == "__main__"):
     #Mean Error值集合
     ME_RESULT = []
 
+    NMB_RESULT = []
+
+    NME_RESULT = []
+
+    MFB_RESULT = []
+
+    MFE_RESULT = []
+
     #主要调用
     init_()
     get_30_situation()
@@ -99,6 +126,32 @@ if (__name__ == "__main__"):
     print("MB_RESULT_MIN:", min(MB_RESULT))
     print("MB_RESULT_MAX:", max(MB_RESULT))
 
+    print("------------------------------------------------------------------")
+
     print("ME_RESULT:", ME_RESULT)
     print("ME_RESULT_MIN:", min(ME_RESULT))
     print("ME_RESULT_MAX:", max(ME_RESULT))
+
+    print("------------------------------------------------------------------")
+
+    print("NMB_RESULT:", NMB_RESULT)
+    print("NMB_RESULT_MIN:", min(NMB_RESULT))
+    print("NMB_RESULT_MAX:", max(NMB_RESULT))
+
+    print("------------------------------------------------------------------")
+
+    print("NME_RESULT:", NME_RESULT)
+    print("NME_RESULT_MIN:", min(NME_RESULT))
+    print("NME_RESULT_MAX:", max(NME_RESULT))
+
+    print("------------------------------------------------------------------")
+
+    print("MFB_RESULT:", MFB_RESULT)
+    print("MFB_RESULT_MIN:", min(MFB_RESULT))
+    print("MFB_RESULT_MAX:", max(MFB_RESULT))
+
+    print("------------------------------------------------------------------")
+
+    print("MFE_RESULT:", MFE_RESULT)
+    print("MFE_RESULT_MIN:", min(MFE_RESULT))
+    print("MFE_RESULT_MAX:", max(MFE_RESULT))

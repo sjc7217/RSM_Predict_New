@@ -3,7 +3,6 @@ import torch
 from torch.autograd import Variable
 import csv
 import os
-import numpy as np
 
 '''
 连续化处理整个空间网络的参数拟合
@@ -13,7 +12,7 @@ import numpy as np
 #训练系数初始值，只需要初始化一次
 para=[]
 #神经网络MSE拟合程度度量值
-ACCURACY = 0.5
+ACCURACY = 1
 #进程数
 PROCESS_NUM = 4
 #用于存放训练project的序号
@@ -28,7 +27,7 @@ def para_init():
 
     for x in range(174):
         for y in range(150):
-            if((not os.path.exists("./data/net_saved_30_40_1/net_" + str(x) + "_" + str(y) + ".pkl"))):
+            if((not os.path.exists("./data/net_saved_30_10_10_1/net_" + str(x) + "_" + str(y) + ".pkl"))and (not os.path.exists("/media/lordshi/Life/RSM_0919_new/net_" + str(x) + "_" + str(y) + ".pkl"))):
                 LIST_NUM.append([x,y])
             # PROJECT_LIST.append("./data/output/out_" + str(x) + "_" + str(y) + ".csv")
             # NET_NAME_LIST.append("./data/net_saved_multi_processing/net_" + str(x) + "_" + str(y) + ".pkl")
@@ -52,9 +51,9 @@ def train(net_name,filein):
     net = torch.nn.Sequential(
         torch.nn.Linear(30,40),
         torch.nn.Sigmoid(),
-        # torch.nn.Linear(10,10),
-        # torch.nn.Sigmoid(),
-        torch.nn.Linear(40,1)
+        torch.nn.Linear(40,10),
+        torch.nn.Sigmoid(),
+        torch.nn.Linear(10,1)
     ).cuda()
 
     #优化器Adagrad
@@ -69,12 +68,7 @@ def train(net_name,filein):
         optimizer.zero_grad()   # clear gradients for next train
         loss.backward()         # backpropagation, compute gradients
         optimizer.step()    # apply gradients
-        # if(np.random.rand()<0.1):
-        #     print("预测值：",prediction)
-        #
-        #     print("y:",y)
-        #
-        #     print("-----------------------------------------------------------------")
+
         loss_value = loss.cpu().data.numpy()[0]
 
         #print(loss_value,net_name)
@@ -99,7 +93,7 @@ def train(net_name,filein):
 def run_one_time_project(x_y):
     try:
         f = open("./data/output/out_" + str(x_y[0]) + "_" + str(x_y[1])  + ".csv", "r")
-        name = "./data/net_saved_30_40_1/net_" + str(x_y[0]) + "_" + str(x_y[1]) + ".pkl"
+        name = "/media/lordshi/Life/RSM_0919_new/net_" + str(x_y[0]) + "_" + str(x_y[1]) + ".pkl"
         #训练开启代码
         train(name, f)
         f.close()

@@ -6,41 +6,18 @@ import csv
 import numpy
 
 #
-#用于计算所有单个net网络在外部验证时的误差估算
+#用于计算单个net网络在外部验证（n=30时）的误差估算
 #
 #
-
-
-#初始化全部计算出来的网络进入内存，加快运算速度
-def init_():
-    for x in range(174):
-        for y in range(150):
-            name = "/media/lordshi/Life/RSM_0919_new/net_" + str(x) + "_" + str(y) + ".pkl"
-            net = torch.load(name)
-            NET_LIST.append(net)
 
 
 #按照外部验证清单处理每个网络结果
-#返回值@result size为 外部验证数×网络数
-def deal_nets(para_in):
-     result=[]
-     for net in NET_LIST:
-         net_res=[]
-         for para_once in para_in:
-             predict = net(para_once).data.numpy()[0][0]
-             net_res.append(predict)
-         result.append(net_res)
-     return result
-
-
-# def deal_one_situation(para_in):
-#     result = []
-#     for net in NET_LIST:
-#         predict = net(para_in)
-#         result.append(predict.data.numpy()[0][0])
-#     return result
-
-
+def deal_net(para_in):
+     net_res=[]
+     for para_once in para_in:
+         predict = net(para_once).data.numpy()[0][0]
+         net_res.append(predict)
+     return net_res
 
 #用于处理外部验证数据的格式化以及整个程序流程
 def get_30_situation():
@@ -58,27 +35,22 @@ def get_30_situation():
     #print(situation_list)
 
     #关键调用
-    res= deal_nets(situation_list)
+    res= deal_net(situation_list)
     return res
 
 
 #获取RSM模拟值的相同size
-def get_one_situation_rsm():
-    res = []
-    #RSM list全部提取出来，减少IO提高速度
+def get_one_situation_rsm(x,y):
     RSM_LIST=[]
     for m in range(30):
         file_RSM_output = "./data/validate_input/ACONC.01.lay1.PM2.5." + str(403 + m)
         RSM_LIST.append(Dataset(file_RSM_output, "r", format="NETCDF4"))
+    print(x,y)
 
-    #对于每个网络（空间点）获取RSM预测数据
-    for k in range(174):
-        for j in range(150):
-            res_one_sit=[]
-            for RSM in RSM_LIST:
-                res_one_sit.append(RSM.variables["PM25_TOT"][0, 0, k, j])
-            res.append(res_one_sit)
-    return res
+    res_one_sit=[]
+    for RSM in RSM_LIST:
+        res_one_sit.append(RSM.variables["PM25_TOT"][0, 0, x, y])
+    return res_one_sit
 
 # def calculate_MB_and_ME():
 #     for i in range(30):
@@ -106,8 +78,23 @@ def diff(pre,rsm):
 
 #主程序入口
 if (__name__ == "__main__"):
-    #网络提取
-    NET_LIST=[]
+    path=input("请输入所需计算误差网格所在文件夹：")
+
+    x=input("请输入网格x坐标：")
+
+    x_index=int(x)
+
+    y=input("请输入网格y坐标：")
+
+    y_index=int(y)
+
+    file_x_y=path+"net_"+x+"_"+y+".pkl"
+    print(file_x_y)
+    try:
+        net = torch.load(file_x_y)
+    except:
+        print("Wrong path of net name!")
+        exit(1)
 
     #外部验证数据提取
     file_factor = "./data/400validate.csv"
@@ -115,23 +102,20 @@ if (__name__ == "__main__"):
     reader = csv.reader(file)
     table = [row[1:] for row in reader][1:]
 
-    #初始化代码
-    init_()
 
     #网络预测值获取
     net_result=get_30_situation()
+    print("net_result:",net_result)
+
+
     #RSM获取
-    rsm_result=get_one_situation_rsm()
+    rsm_result=get_one_situation_rsm(x_index,y_index)
+    print("rsm_result:",rsm_result)
 
     #误差计算
     error=[]
-    for index in range(len(net_result)):
-        predict_one=net_result[index]
-        rsm_one=rsm_result[index]
-        error_one=diff(predict_one,rsm_one)
-        error.append(error_one)
-    ee=[error.index(i) for i in error if i>1000]
-    #print(type(error))
-    print(ee)
-    print([[j//150,j % 150] for j in ee])
 
+    for i in range(30):
+        error.append(net_result[i]-rsm_result[i])
+
+    print(error)
