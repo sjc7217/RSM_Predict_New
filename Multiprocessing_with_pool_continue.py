@@ -13,7 +13,7 @@ import numpy as np
 #训练系数初始值，只需要初始化一次
 para=[]
 #神经网络MSE拟合程度度量值
-ACCURACY = 0.5
+ACCURACY = 1
 #进程数
 PROCESS_NUM = 3
 #用于存放训练project的序号
