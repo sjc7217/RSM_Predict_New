@@ -6,7 +6,7 @@ import csv
 import numpy
 
 #
-#用于整体网络数据误差ME，MB计算
+#用于整体网络数据误差ME，MB等误差计量值的计算
 #
 
 #初始化所有网络参数进入内存，减少IO读取加快速度
@@ -84,8 +84,8 @@ def calculate_MB_and_ME():
         MFB_RESULT.append(mean_FB)
         MFE_RESULT.append(mean_FE)
 
-
-
+def mean(a):
+    return sum(a)/len(a)
 
 
 if (__name__ == "__main__"):
@@ -123,35 +123,41 @@ if (__name__ == "__main__"):
 
     #print(PREDICT_ALL)
     print("MB_RESULT:", MB_RESULT)
+    print("MB_RESULT_MEAN:", mean(MB_RESULT))
     print("MB_RESULT_MIN:", min(MB_RESULT))
     print("MB_RESULT_MAX:", max(MB_RESULT))
 
     print("------------------------------------------------------------------")
 
     print("ME_RESULT:", ME_RESULT)
+    print("ME_RESULT_MEAN:", mean(ME_RESULT))
     print("ME_RESULT_MIN:", min(ME_RESULT))
     print("ME_RESULT_MAX:", max(ME_RESULT))
 
     print("------------------------------------------------------------------")
 
     print("NMB_RESULT:", NMB_RESULT)
+    print("NMB_RESULT_MEAN:", mean(NMB_RESULT))
     print("NMB_RESULT_MIN:", min(NMB_RESULT))
     print("NMB_RESULT_MAX:", max(NMB_RESULT))
 
     print("------------------------------------------------------------------")
 
     print("NME_RESULT:", NME_RESULT)
+    print("NME_RESULT_MEAN:", mean(NME_RESULT))
     print("NME_RESULT_MIN:", min(NME_RESULT))
     print("NME_RESULT_MAX:", max(NME_RESULT))
 
     print("------------------------------------------------------------------")
 
     print("MFB_RESULT:", MFB_RESULT)
+    print("MFB_RESULT_MEAN:", mean(MFB_RESULT))
     print("MFB_RESULT_MIN:", min(MFB_RESULT))
     print("MFB_RESULT_MAX:", max(MFB_RESULT))
 
     print("------------------------------------------------------------------")
 
     print("MFE_RESULT:", MFE_RESULT)
+    print("MFE_RESULT_MEAN:", mean(MFE_RESULT))
     print("MFE_RESULT_MIN:", min(MFE_RESULT))
     print("MFE_RESULT_MAX:", max(MFE_RESULT))

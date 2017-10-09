@@ -6,7 +6,7 @@ import csv
 import numpy
 
 #
-#用于整体网络数据误差ME，MB计算
+#用于整体网络数据误差ME，MB等误差参数的计算
 #
 
 #初始化所有网络参数进入内存，减少IO读取加快速度
@@ -14,7 +14,7 @@ def init_():
     for x in range(29):
         for y in range(30):
             try:
-                name = "../data/net_saved_30_40_30_6_5_new/net_" + str(x) + "_" + str(y) + ".pkl"
+                name = "./data/net_saved_30_40_30_6_5_new/net_" + str(x) + "_" + str(y) + ".pkl"
                 net = torch.load(name)
                 NET_LIST.append(net)
             except:
@@ -46,7 +46,7 @@ def get_30_situation():
 #用于CMAQ模拟数据获取，i定义了外部数据的index
 def get_one_situation_rsm(i):
     res = []
-    file_RSM_output = "../data/validate_input_new/ACONC.01.lay1.PM2.5." + str(403 + i)
+    file_RSM_output = "./data/validate_input_new/ACONC.01.lay1.PM2.5." + str(403 + i)
     RSM_ = Dataset(file_RSM_output, "r", format="NETCDF4")
     # 以6*5为小区域进行神经网络输出值进行拟合，适当考虑模型的区域相关关系         ##以大区域为单位对26100个格点进行按序排列，用来计算误差
     for i in range(29):
@@ -100,7 +100,8 @@ def calculate_MB_and_ME():
         MFE_RESULT.append(mean_FE)
 
 
-
+def mean(a):
+    return sum(a)/len(a)
 
 
 if (__name__ == "__main__"):
@@ -108,7 +109,7 @@ if (__name__ == "__main__"):
     NET_LIST=[]
 
     #验证情景获取
-    file_factor = "../data/400validate.csv"
+    file_factor = "./data/400validate.csv"
     file = open(file_factor, 'r')
     reader = csv.reader(file)
     table = [row[1:] for row in reader][1:]
@@ -138,35 +139,41 @@ if (__name__ == "__main__"):
 
     #print(PREDICT_ALL)
     print("MB_RESULT:", MB_RESULT)
+    print("MB_RESULT_MEAN:", mean(MB_RESULT))
     print("MB_RESULT_MIN:", min(MB_RESULT))
     print("MB_RESULT_MAX:", max(MB_RESULT))
 
     print("------------------------------------------------------------------")
 
     print("ME_RESULT:", ME_RESULT)
+    print("ME_RESULT_MEAN:", mean(ME_RESULT))
     print("ME_RESULT_MIN:", min(ME_RESULT))
     print("ME_RESULT_MAX:", max(ME_RESULT))
 
     print("------------------------------------------------------------------")
 
     print("NMB_RESULT:", NMB_RESULT)
+    print("NMB_RESULT_MEAN:", mean(NMB_RESULT))
     print("NMB_RESULT_MIN:", min(NMB_RESULT))
     print("NMB_RESULT_MAX:", max(NMB_RESULT))
 
     print("------------------------------------------------------------------")
 
     print("NME_RESULT:", NME_RESULT)
+    print("NME_RESULT_MEAN:", mean(NME_RESULT))
     print("NME_RESULT_MIN:", min(NME_RESULT))
     print("NME_RESULT_MAX:", max(NME_RESULT))
 
     print("------------------------------------------------------------------")
 
     print("MFB_RESULT:", MFB_RESULT)
+    print("MFB_RESULT_MEAN:", mean(MFB_RESULT))
     print("MFB_RESULT_MIN:", min(MFB_RESULT))
     print("MFB_RESULT_MAX:", max(MFB_RESULT))
 
     print("------------------------------------------------------------------")
 
     print("MFE_RESULT:", MFE_RESULT)
+    print("MFE_RESULT_MEAN:", mean(MFE_RESULT))
     print("MFE_RESULT_MIN:", min(MFE_RESULT))
     print("MFE_RESULT_MAX:", max(MFE_RESULT))
