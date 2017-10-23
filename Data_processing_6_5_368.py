@@ -11,13 +11,13 @@ import csv
 '''
 
 #所有netCDF文件的路径列表
-PATHS=["../data/input_new_12/ACONC.01.lay1.PM2.5."+str(i) for i in range(1,369)]
+PATHS=["./data/input_new_12/ACONC.01.lay1.PM2.5."+str(i) for i in range(1,369)]
 
 CMAQ_RESULT_LIST=[]
 
 #368个减排因子获取
 try:
-    fin=open("../data/control_0904.csv","r")
+    fin=open("./data/control_0904.csv","r")
     reader=csv.reader(fin)
 except:
     print("Can't find the correct file!")
@@ -59,7 +59,7 @@ def get_i_j_file():
                 case_item.append(net_item)
 
             try:
-                fout=open("../data/output_6_5_new/out_"+str(i)+'_'+str(j)+".csv","w",newline='')
+                fout=open("./data/output_6_5_new/out_"+str(i)+'_'+str(j)+".csv","w",newline='')
                 writer=csv.writer(fout)
             except:
                 print("Can't open file correctly!" )

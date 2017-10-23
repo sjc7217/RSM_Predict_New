@@ -14,7 +14,7 @@ def init_():
     for x in range(58):
         for y in range(50):
             try:
-                name = "./data/net_saved_30_40_30_6_5_new/net_" + str(x) + "_" + str(y) + ".pkl"
+                name = "./data/net_saved_30_40_30_9new/net_" + str(x) + "_" + str(y) + ".pkl"
                 net = torch.load(name)
                 NET_LIST.append(net)
             except:
@@ -25,7 +25,7 @@ def deal_one_situation(para_in):
     result = []
     for net in NET_LIST:
         predict = net(para_in)
-        result.extend(predict.data.numpy()[0])     #predict此处为30的向量，result变为一维向量
+        result.extend(predict.data.numpy()[0])     #predict此处为9的向量，result变为一维向量
     return result
 
 #主调函数，根据table定义的外部验证数据获取网络你和数据
@@ -48,7 +48,7 @@ def get_one_situation_rsm(i):
     res = []
     file_RSM_output = "./data/validate_input_new/ACONC.01.lay1.PM2.5." + str(403 + i)
     RSM_ = Dataset(file_RSM_output, "r", format="NETCDF4")
-    # 以6*5为小区域进行神经网络输出值进行拟合，适当考虑模型的区域相关关系         ##以大区域为单位对26100个格点进行按序排列，用来计算误差
+    # 以3*3为小区域进行神经网络输出值进行拟合，适当考虑模型的区域相关关系         ##以大区域为单位对26100个格点进行按序排列，用来计算误差
     for i in range(58):
         for j in range(50):
             # 小区域在原174*150区域中的x，y坐标值

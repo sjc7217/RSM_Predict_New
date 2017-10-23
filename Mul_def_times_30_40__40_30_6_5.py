@@ -6,28 +6,35 @@ import os
 
 '''
 连续化,区域化处理整个空间网络的参数拟合   
-将整个174*150网格数据切分成3*3小块
-所用神经网络初步定为30*40*30*9
+将整个174*150网格数据切分成6*5小块
+所用神经网络初步定为30*40*40*30
 
+指定训练次数出口，计算最终误差
 '''
 #训练系数初始值，只需要初始化一次
 para = []
-#神经网络MSE拟合程度度量值
-ACCURACY = 0.5
+# #神经网络MSE拟合程度度量值
+# ACCURACY = 1
 #进程数
-PROCESS_NUM = 2
+PROCESS_NUM = 3
 #用于存放训练project的序号
 LIST_NUM = []
 
-para_init_0 = open("./data/output_3_3_new/out_0_0.csv", "r")
+TIMES = input('请输入本次训练所需迭代次数：')
+
+para_init_0 = open("./data/output_6_5_new/out_0_0.csv", "r")
 reader = csv.reader(para_init_0)
 for line in reader:
     para.append([float(i) for i in line[1:31]])
 
+
+if(not os.path.exists("./data/net_saved_30_40_40_30_6_5_new_"+TIMES)):
+    os.mkdir("./data/net_saved_30_40_40_30_6_5_new_"+TIMES)
+
 #系数和训练参数初始化
-for x in range(58):
-    for y in range(50):
-        if ((not os.path.exists("./data/net_saved_30_40_30_9_drop_new/net_" + str(x) + "_" + str(y) + ".pkl"))):
+for x in range(29):
+    for y in range(30):
+        if ((not os.path.exists("./data/net_saved_30_40_40_30_6_5_new_"+TIMES+"/net_" + str(x) + "_" + str(y) + ".pkl"))):
             LIST_NUM.append([x, y])
 
 
@@ -39,7 +46,7 @@ def train(net_name,filein):
     #标记值获取并格式化
     reader = csv.reader(filein)
     for line in reader:
-        response.append([float(i) for i in line[31:40]])  #取出每一行的训练数据，此处为3*3=9个
+        response.append([float(i) for i in line[31:61]])
 
     factor = torch.FloatTensor(para)
     #print(factor)
@@ -51,34 +58,32 @@ def train(net_name,filein):
     #网格结构定义
     net = torch.nn.Sequential(
         torch.nn.Linear(30,40),
-        torch.nn.Dropout(0.5),
         torch.nn.Sigmoid(),
-        torch.nn.Linear(40,30),
-        torch.nn.Dropout(0.5),
+        torch.nn.Linear(40,40),
         torch.nn.Sigmoid(),
-        torch.nn.Linear(30,9)
+        torch.nn.Linear(40, 30)
     ).cuda()
 
     #优化器Adagrad
-    optimizer = torch.optim.Adagrad(net.parameters(),lr=0.4)
+    optimizer = torch.optim.Adagrad(net.parameters(),lr=0.48)
     #误差函数MSEloss
     loss_func = torch.nn.MSELoss().cuda()  # this is for regression mean squared loss
+
+    TIMES_NUM = int(TIMES)
     #训练过程，反复调整参数，直到误差loss小于一定值
-    while(1):
+    while(TIMES_NUM>0):
+        TIMES_NUM-=1
         prediction = net(x).cuda()     # input x and predict based on x
         loss = loss_func(prediction, y).cuda()   # must be (1. nn output, 2. target)
         optimizer.zero_grad()   # clear gradients for next train
         loss.backward()         # backpropagation, compute gradients
         optimizer.step()    # apply gradients
-        loss_value = loss.cpu().data.numpy()[0]
+        #loss_value = loss.cpu().data.numpy()[0]
 
         #print(loss_value,net_name)
-        if(loss_value<ACCURACY):
-            #print(count)
-            break
+        # if(loss_value<ACCURACY):
+        #     break
         #print(loss_value)
-        #print(prediction.cpu().data.numpy())
-        #print(prediction.cpu().data.numpy())
 
     #保存网格
     try:
@@ -92,8 +97,8 @@ def train(net_name,filein):
 #主调函数，用于不断调用进程池中的任务
 def run_one_time_project(x_y):
     try:
-        f = open("./data/output_3_3_new/out_" + str(x_y[0]) + "_" + str(x_y[1])  + ".csv", "r")
-        name = "./data/net_saved_30_40_30_9_drop_new/net_" + str(x_y[0]) + "_" + str(x_y[1]) + ".pkl"
+        f = open("./data/output_6_5_new/out_" + str(x_y[0]) + "_" + str(x_y[1])  + ".csv", "r")
+        name = "./data/net_saved_30_40_40_30_6_5_new_"+TIMES+"/net_" + str(x_y[0]) + "_" + str(x_y[1]) + ".pkl"
         #训练开启代码
         train(name, f)
     except:

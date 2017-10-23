@@ -13,9 +13,13 @@ import numpy
 def init_():
     for x in range(174):
         for y in range(150):
-            name = "/media/lordshi/Life/RSM_0921_ALL/net_" + str(x) + "_" + str(y) + ".pkl"
-            net = torch.load(name)
-            NET_LIST.append(net)
+            name = "/media/lordshi/System/Users/LordShi/PycharmProjects/RSM_Predict_New/data/net_saved_30_10_10_1_12new/net_" + str(x) + "_" + str(y) + ".pkl"
+            try:
+                net = torch.load(name)
+                NET_LIST.append(net)
+            except:
+                print(name)
+
 
 #单个验证情景网格拟合数据获取
 def deal_one_situation(para_in):
@@ -43,7 +47,7 @@ def get_30_situation():
 #用于CMAQ模拟数据获取，i定义了外部数据的index
 def get_one_situation_rsm(i):
     res = []
-    file_RSM_output = "./data/validate_input/ACONC.01.lay1.PM2.5." + str(403 + i)
+    file_RSM_output = "./data/validate_input_new/ACONC.01.lay1.PM2.5." + str(403 + i)
     RSM_ = Dataset(file_RSM_output, "r", format="NETCDF4")
     for j in range(174):
         for k in range(150):

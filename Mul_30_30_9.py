@@ -25,8 +25,8 @@ for line in reader:
     para.append([float(i) for i in line[1:31]])
 
 #系数和训练参数初始化
-for x in range(87):
-    for y in range(75):
+for x in range(58):
+    for y in range(50):
         if ((not os.path.exists("./data/net_saved_30_30_9new/net_" + str(x) + "_" + str(y) + ".pkl"))):
             LIST_NUM.append([x, y])
 
@@ -61,9 +61,10 @@ def train(net_name,filein):
     optimizer = torch.optim.Adagrad(net.parameters(),lr=0.4)
     #误差函数MSEloss
     loss_func = torch.nn.MSELoss().cuda()  # this is for regression mean squared loss
-
+    count=0
     #训练过程，反复调整参数，直到误差loss小于一定值
     while(1):
+        count+=1
         #print(x)
         prediction = net(x).cuda()     # input x and predict based on x
         loss = loss_func(prediction, y).cuda()   # must be (1. nn output, 2. target)
@@ -74,6 +75,7 @@ def train(net_name,filein):
 
         #print(loss_value,net_name)
         if(loss_value<ACCURACY):
+            print(count)
             break
         #print(loss_value)
         #print(prediction.cpu().data.numpy())
