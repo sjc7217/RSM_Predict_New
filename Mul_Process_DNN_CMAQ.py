@@ -59,11 +59,10 @@ class CMAQ_PREDICT:
         # 标记值获取并格式化
         reader = csv.reader(filein)
         for line in reader:
-            if (self.REGION_DEF[0] == 1):
+            if(self.REGION_DEF[0]==1):
                 response.append(float(line[-1]))
             else:
-                response.append(
-                    [float(i) for i in line[31:(31 + self.REGION_DEF[0] * self.REGION_DEF[1])]])  # 取出每一行的训练数据
+                response.append([float(i) for i in line[31:(31+self.REGION_DEF[0]*self.REGION_DEF[1])]])  # 取出每一行的训练数据
         factor = torch.FloatTensor(self.para)
         res = torch.FloatTensor(response)
 
@@ -155,5 +154,5 @@ class CMAQ_PREDICT:
 
 if(__name__=="__main__"):
     #实例化RSM_PREDICT类需要若干参数，分别为CUDA加速标志，计算区域定义（list），网络计算精度（出口），多进程并行计算核数，网络结构定义（list）
-    predict_object = CMAQ_PREDICT(False,[1,1],1,2,[30,40,1])
+    predict_object = CMAQ_PREDICT(True,[29,25],0.5,2,[30,500,725])
     predict_object.run()

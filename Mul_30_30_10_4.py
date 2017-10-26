@@ -15,7 +15,7 @@ para = []
 #神经网络MSE拟合程度度量值
 ACCURACY = 0.5
 #进程数
-PROCESS_NUM = 1
+PROCESS_NUM = 2
 #用于存放训练project的序号
 LIST_NUM = []
 

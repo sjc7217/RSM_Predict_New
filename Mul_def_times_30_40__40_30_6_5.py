@@ -78,12 +78,6 @@ def train(net_name,filein):
         optimizer.zero_grad()   # clear gradients for next train
         loss.backward()         # backpropagation, compute gradients
         optimizer.step()    # apply gradients
-        #loss_value = loss.cpu().data.numpy()[0]
-
-        #print(loss_value,net_name)
-        # if(loss_value<ACCURACY):
-        #     break
-        #print(loss_value)
 
     #保存网格
     try:
