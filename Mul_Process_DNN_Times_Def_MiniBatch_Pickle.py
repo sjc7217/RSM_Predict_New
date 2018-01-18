@@ -6,7 +6,8 @@ import csv
 import os
 import time
 import math
-
+import pickle
+from operator import itemgetter
 '''
 连续化处理整个空间网络的参数拟合
 
@@ -33,16 +34,16 @@ class CMAQ_PREDICT(object):
         #网络结构定义
         self.NET_STRUCTURE = net_structure
 
-        #自动生成网络结果存储目录
-        path = "./data/net_saved"
+        # 自动生成网络结果存储目录
+        path = "./data/All_Net_Picklized_MiniBatch/" + str(math.ceil(time.time()))
         for net_cores in net_structure:
             path = path + "_" + str(net_cores)
-        path = path + "_" + str(math.ceil(time.time())) + "_" + str(self.RUN_TIMES)
+        path = path + "_" + str(self.RUN_TIMES) + ".pkl"
         self.SAVED_PATH = path
 
-        #创建存储文件夹
-        if(not os.path.exists(self.SAVED_PATH)):
-            os.makedirs(self.SAVED_PATH)
+        # #创建存储文件夹
+        # if(not os.path.exists(self.SAVED_PATH)):
+        #     os.makedirs(self.SAVED_PATH)
 
         #读入所有所需训练因子
         para_init_0 = open("./data/output_12_new/out_0_0.csv", "r")
@@ -68,6 +69,7 @@ class CMAQ_PREDICT(object):
                 response.append(float(line[-1]))
             else:
                 response.append([float(i) for i in line[31:(31+self.REGION_DEF[0]*self.REGION_DEF[1])]])  # 取出每一行的训练数据
+        #只要转换成FloatTensor就能放进cuda好像？
         factor = torch.FloatTensor(self.para).cuda()
         res = torch.FloatTensor(response).cuda()
 
@@ -84,7 +86,7 @@ class CMAQ_PREDICT(object):
         net = self.net_produce()
         # 优化器Adagrad
         #optimizer = torch.optim.RMSprop(net.parameters(), lr=0.4,alpha=0.5,momentum=0.5)
-        optimizer = torch.optim.Adagrad(net.parameters(), lr=0.4)
+        optimizer = torch.optim.SGD(net.parameters(), lr=0.4)
         # 误差函数MSEloss
         if(self.CUDA_AVAILABLE):
             loss_func = torch.nn.MSELoss().cuda()  # this is for regression mean squared loss
@@ -117,12 +119,20 @@ class CMAQ_PREDICT(object):
                 loss.backward()  # backpropagation, compute gradients
                 optimizer.step()  # apply gradients
 
+                if(self.CUDA_AVAILABLE):
+                    loss_value = loss.cpu().data.numpy()[0]
+                else:
+                    loss_value = loss.data.numpy()[0]
+                print(loss_value)
+
         # 保存网格
         try:
             if(self.CUDA_AVAILABLE):
-                torch.save(net.cpu(), net_name)
+                # torch.save(net.cpu(), net_name)
+                return net.cpu()
             else:
-                torch.save(net, net_name)
+                # torch.save(net, net_name)
+                return net
         except:
             print("Can't save the net" + net_name)
             exit(1)
@@ -152,25 +162,33 @@ class CMAQ_PREDICT(object):
             f = open("./data/output_"+str(self.REGION_DEF[0])+"_"+str(self.REGION_DEF[1])+"_new/out_" + str(x_y[0]) + "_" + str(x_y[1]) + ".csv", "r")
         name = self.SAVED_PATH+"/net_" + str(x_y[0]) + "_" + str(x_y[1]) + ".pkl"
         # 训练开启代码
-        self.train(name, f)
+        res_single = self.train(name, f)
         f.close()
-        # except:
-        #     print("Can't open file or reach the bottom!")
-
+        # 返回带网络排序参数的网络训练结果。
+        return [x_y[0], x_y[1], res_single]
 
     #运行入口
     def run(self):
         pool = multiprocessing.Pool(self.PROCESS_NUM)
         # 进程池中的进程依次调用可迭代对象进行计算
-        pool.map(self.run_one_time_project, self.LIST_NUM)
+        res_final = pool.map(self.run_one_time_project, self.LIST_NUM)
         # 进程池不再添加新的进程
         pool.close()
         # 主线程阻塞等待子线程结束
         pool.join()
 
+        # operator.itemgetter模块用于生成排序需要的函数
+        standard = itemgetter(0, 1)
+        # 按照标准对所有网络顺序进行排序
+        sorted(res_final, key=standard)
+        # pickle保存网络参数
+        saved_file = open(self.SAVED_PATH, 'wb')
+        pickle.dump(res_final, saved_file)
+        saved_file.close()
+        #程序正常结束标志
         print("Finished all jobs and quit the program!")
 
 if(__name__=="__main__"):
     # 构造函数，系数和训练参数初始化，实例化RSM_PREDICT类需要若干参数，分别为CUDA加速标志，计算区域定义（list），计算迭代次数，多进程并行计算核数，网络结构定义（list）
-    predict_object = CMAQ_PREDICT(True,[6,5],50,2,[30,30,40,30])
+    predict_object = CMAQ_PREDICT(True,[6,5],50,1,[30,30,40,30])
     predict_object.run()

@@ -1,9 +1,7 @@
 from netCDF4 import Dataset
-import multiprocessing
 import torch
 from torch.autograd import Variable
 import csv
-import numpy
 import pickle
 
 #
@@ -175,5 +173,5 @@ class After_Analysis(object):
         self.print_data()
 
 if(__name__ == "__main__"):
-    analysis = After_Analysis([6,5],"./data/All_Net_Picklized/1516257290_30_40_40_30_100.pkl")
+    analysis = After_Analysis([6,5],"./data/All_Net_Picklized/1516263818_30_40_40_30_100.pkl")
     analysis.run()
