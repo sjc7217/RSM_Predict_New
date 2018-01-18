@@ -9,7 +9,7 @@ import os
 
 #预测值获取类
 class Net_Predict_Get:
-    #构造函数，所需输入参数为：1.net_structure:网格结构字符串（数字之间用下划线连接），2.region_def:单个计算区域定义，为一个list,3.cal_range:外部验证工况选取，list
+    #构造函数，所需输入参数为：1.所需要的输入文件夹，2.region_def:单个计算区域定义，为一个list,3.cal_range:外部验证工况选取，list 4.是否进行smooth标志
     def __init__(self, folder,region_def,cal_range,smoothize_flag):
         self.NET_LIST=[]
         self.SAVED_FOLDER = folder
@@ -125,5 +125,6 @@ class Net_Predict_Get:
 
 #单文件运行入口
 if(__name__ == "__main__"):
+    #输入参数为：1.所需要的输入文件夹，2.region_def:单个计算区域定义，为一个list,3.cal_range:外部验证工况选取，list 4.是否进行smooth标志
     predict_object = Net_Predict_Get("net_saved_30_40_40_30new_250", [6, 5], [i for i in range(30) if i % 2 == 0],True)
     predict_object.run()
